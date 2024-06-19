@@ -1,0 +1,146 @@
+package Practice;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.bson.Document;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+
+public class Task2 {
+    public static void main(String[] args) {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("Saturday");
+
+        MongoCollection<Document> collection = database.getCollection("Employee");
+
+        Document document1 = new Document("First_Name", "John")
+            .append("Last_Name", "Smith")
+            .append("Salary", 35000)
+            .append("age", 25);
+
+        collection.insertOne(document1);
+
+        List<Document> documents = new ArrayList<>();
+        documents.add(new Document("First_Name", "Alice")
+                .append("Last_Name", "Johnson")
+                .append("Salary", 40000)
+                .append("age", 28));
+
+        documents.add(new Document("First_Name", "Bob")
+                .append("Last_Name", "Brown")
+                .append("Salary", 31000)
+                .append("age", 31));
+
+        documents.add(new Document("First_Name", "Eva")
+                .append("Last_Name", "White")
+                .append("Salary", 40000)
+                .append("age", 35));
+        
+        documents.add(new Document("First_Name", "Michael")
+                .append("Last_Name", "Davis")
+                .append("Salary", 39000)
+                .append("age", 33));
+        
+        documents.add(new Document("First_Name", "Sophia")
+                .append("Last_Name", "Martinez")
+                .append("Salary", 31000)
+                .append("age", 40));
+
+        collection.insertMany(documents);
+
+        System.out.println("Documents inserted.");
+
+        FindIterable<Document> lowSalary = collection.find(Filters.and(Filters.gte("age", 30), Filters.lte("age", 40)))
+                .sort(new BasicDBObject("Salary", 1)).limit(1);
+        
+        if (lowSalary != null) {
+            int lowestSalary = lowSalary.first().getInteger("Salary");
+            List<Document> resultList = new ArrayList<>();
+            for (Document doc : collection.find(Filters.and(Filters.gte("age", 30), Filters.lte("age", 40), Filters.eq("Salary", lowestSalary)))) {
+                resultList.add(doc);
+            }
+
+            System.out.println("Employees between 30 and 40 with the lowest salary:");
+            for (Document doc : resultList) {
+                System.out.println(doc.toJson());
+            }
+        }
+    }
+}
+
+
+
+import java.util.ArrayList;
+import org.bson.Document;
+import com.mongodb.BasicDBObject;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
+
+public class ASS_2 {
+    public static void main(String[] args) {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("Saturday");
+        MongoCollection<Document> collection = database.getCollection("employee");
+        collection.drop();
+
+        Document document1 = new Document("First_Name", "Andrew")
+                .append("Last_Name", "Jackson")
+                .append("salary", 28000)
+                .append("age", 25);
+        Document document2 = new Document("First_Name", "Michael")
+                .append("Last_Name", "Johnson")
+                .append("salary", 36000)
+                .append("age", 37);
+        Document document3 = new Document("First_Name", "Emily")
+                .append("Last_Name", "Parker")
+                .append("salary", 44000)
+                .append("age", 35);
+        Document document4 = new Document("First_Name", "Sophia")
+                .append("Last_Name", "Brown")
+                .append("salary", 27000)
+                .append("age", 23);
+        Document document5 = new Document("First_Name", "Daniel")
+                .append("Last_Name", "Miller")
+                .append("salary", 24000)
+                .append("age", 30);
+        Document document6 = new Document("First_Name", "Olivia")
+                .append("Last_Name", "Davis")
+                .append("salary", 43000)
+                .append("age", 43);
+
+        ArrayList<Document> documents = new ArrayList<>();
+        documents.add(document1);
+        documents.add(document2);
+        documents.add(document3);
+        documents.add(document4);
+        documents.add(document5);
+        documents.add(document6);
+
+        collection.insertMany(documents);
+
+        FindIterable<Document> allDocumentsSortedBySalary = collection.find().sort(new BasicDBObject("salary", 1));
+
+        Document lowestSalaryDoc = null;
+        for (Document doc : allDocumentsSortedBySalary) {
+            int age = doc.getInteger("age");
+            if (age >= 30 && age <= 40) {
+                lowestSalaryDoc = doc;
+                break;
+            }
+        }
+
+        if (lowestSalaryDoc != null) {
+            System.out.println("Employee with the lowest salary in the age range 30 to 40:");
+            System.out.println(lowestSalaryDoc.toJson());
+        } else {
+            System.out.println("No employees found in the specified age range.");
+        }
+
+        mongoClient.close();
+    }
+}
